@@ -1,5 +1,10 @@
 archive
 cache
-index.html
 today.html
 bugs.rss
+composer.lock
+node_modules
+vendor
+twig_compilation_cache
+
+*~

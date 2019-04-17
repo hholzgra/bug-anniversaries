@@ -1,5 +1,12 @@
 <?php
 
+require_once "vendor/autoload.php";
+
+$t_loader = new \Twig\Loader\FilesystemLoader('templates');
+$twig = new \Twig\Environment($t_loader, [
+    'cache' => 'twig_compilation_cache',
+]);
+
 $date_str = date("Y-m-d");
 
 
@@ -26,18 +33,14 @@ for ($i = 0; $i < 300 ; $i++) {
 
   $body = get_body($day_str);
 
-  $link = "http://php-groupies.de/mysql-bugs/$day_str.html";
+  $link = "./$day_str.html";
   $guid = md5($body);
   $pubdate = strftime("%a, %d %b %Y 00:00:00 +0200", strtotime($day_str));
 
-  $title = "$day_str MySQL Bug Anniversaries";
+  $title = basename($day_str) . " MySQL Bug Anniversaries";
 
   if (!file_exists("$day_str.html")) {
-    ob_start();
-    echo "<html><head><title>$title</title></head><body>\n";
-    echo "$body\n";
-    echo "</body></html>";
-    file_put_contents("$day_str.html", ob_get_clean());
+    file_put_contents("$day_str.html", $twig->render('bug-day.html', [ 'title' => $title, 'body' => $body ]));
   }
 
   echo "
@@ -74,17 +77,15 @@ function get_body($date_str)
 
 function generate_body($date_str) 
 {
+  global $twig;
+  
   $date_str = basename($date_str);
-  ob_start();
-
-  $title = "$date_str MySQL Bug Anniversaries";
-  echo "<h1>$title</h1>\n";
 
   $base_url = "http://bugs.mysql.com/search-csv.php?status[]=Active&os=0&bug_age=0&order_by=id&limit=100&defect_class=all&workaround_viability=all&impact=all&fix_risk=all&fix_effort=all&begin=";
 
   $begin = 0;
 
-  $bugs = array();
+  $bugs = [];
 
   do {
     $bug_count = 0;
@@ -102,26 +103,33 @@ function generate_body($date_str)
       
       if (is_numeric($id)) {
 	$bug_count++;
+
+	$date = substr($entered, 0, 10);
+	$age = date("Y") - date("Y", strtotime($date));
+
 	
 	if (preg_match("|$month_day_str |", $entered) && !preg_match("|$date_str |", $entered)) {
-	  $bugs[$id] = array("date" => substr($entered, 0, 10), "summary" => $summary);
+	  if (!isset($bugs[$age])) $bugs[$age] = [];
+	  $bugs[$age][$id] = array("date" => $date, "summary" => $summary);
 	}
       } 
     }
   } while ($bug_count > 0);
-  
-  $last_date = "";
-  foreach ($bugs as $id => $bug) {
-    if ($bug["date"] != $last_date) {
-      $last_date = $bug["date"];
-      $age = date("Y") - date("Y", strtotime($bug["date"]));
-      echo "<hr/><b>$age years old:</b><br/>\n";
-    } 
-    printf("<tt>%05d</tt> ", $id);
-    echo "<a href='http://bugs.mysql.com/$id'>$bug[summary]</a><br/>\n";
-  }
 
-  return ob_get_clean();
+  krsort($bugs);
+
+  $years = [];
+  $max_age = 0;
+  foreach($bugs as $age => $list) {
+    $years[$age] = [ 'age' => $age, 'year' => date("Y") - $age, 'count' => count($list) ];
+    $max_age = max($max_age, $age);
+  }
+  for ($age = 1; $age <= $max_age; $age++) {
+    if (!isset($years[$age])) $years[$age] = ['age' => $age, 'year' => date("Y") - $age, 'count' => 0 ];
+  }
+  krsort($years);
+
+  return $twig->render('bug-anniversary-section.html', [ 'today' => $date_str, 'sections' => $bugs, 'years' => $years ]);
 }
 
 function fopen_cached($url) 

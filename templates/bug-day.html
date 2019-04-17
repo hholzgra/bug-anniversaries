@@ -1,0 +1,48 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">    
+    <title>{{ title }}</title>
+    
+    <script src="node_modules/jquery/dist/jquery.js"></script>        
+    <script src="node_modules/popper.js/dist/umd/popper.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css" />
+
+    <style>
+    /* Show it is fixed to the top */
+    body {
+    min-height: 75rem;
+    padding-top: 4.5rem;
+    }
+
+    .anchor {
+    display: block;
+    padding-top: 4.5rem;
+    margin-top: -4.5rem;
+    }
+
+    ul {
+    list-style: none;
+    margin-left: 0px;
+    padding-left: 0px;
+    }
+
+    li {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }
+
+    .btn-group-xs > .btn, .btn-xs {
+    padding: .25rem .4rem;
+    font-size: .875rem;
+    line-height: .5;
+    border-radius: .2rem;
+    }
+    </style>
+  </head>
+  <body>
+    {{ body|raw }}
+  </body>
+</html>

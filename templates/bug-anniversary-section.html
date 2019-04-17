@@ -1,0 +1,36 @@
+<main role="main" class="container">
+  <h2 class="text-center">{{ today }} MySQL Bug Anniversaries</h2>
+
+  {% for age, bugs in sections %}
+  <a class="anchor" id="age-{{age}}"></a>
+  <div class="card my-1">
+    <div class="card-header">{{ age }} years ago - {{ bugs|length }} bugs still active</div>
+    <div class="card-body">
+      <ul class="card-text">
+	{% for id, bug in bugs %}
+	<li><a class="text-reset" href="https://bugs.mysql.com/{{ id }}"><b>{{ id }}</b> - {{ bug.summary }}</a></li>
+	{% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+  <br/>
+</main>
+
+<nav class="navbar fixed-top navbar-expand-md bg-light" aria-label="Years & Bugs">
+  <span class="navbar-brand">Bug Years:</span>
+  <div class="collapse navbar-collapse" id="navbarCollapse">
+    <ul class="navbar-nav">
+      {% for year in years %}
+      <li class="nav-item">
+	{% if year.count > 0 %}
+	<a class="nav-link btn btn-outline-danger" href="#age-{{ year.age }}" title="{{ year.age }} years ago - {{ year.count }} bugs still active">{{ year.year }}</a>
+        {% else %}
+	<a class="nav-link btn btn-outline-success" onclick="return false;" href="#" title="{{ year.age }} years ago - no bugs left">{{ year.year }}</a>
+	{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</nav>
+
