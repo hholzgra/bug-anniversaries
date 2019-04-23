@@ -5,6 +5,6 @@ bugs.rss
 composer.lock
 node_modules
 vendor
-twig_compilation_cache
+composer.phar
 
 *~

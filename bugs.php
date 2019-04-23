@@ -4,7 +4,7 @@ require_once "vendor/autoload.php";
 
 $t_loader = new \Twig\Loader\FilesystemLoader('templates');
 $twig = new \Twig\Environment($t_loader, [
-    'cache' => 'twig_compilation_cache',
+    'cache' => 'cache/twig_compilation_cache',
 ]);
 
 $date_str = date("Y-m-d");
