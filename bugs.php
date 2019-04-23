@@ -28,8 +28,8 @@ echo "<?xml version='1.0' encoding='UTF-8'?>
 
 
 for ($i = 0; $i < 300 ; $i++) {
-  @mkdir("archive/".date("Y/m", $end_time - $i * 86400), 0777, true);
-  $day_str = "archive/".date("Y/m/Y-m-d", $end_time - $i * 86400);
+  @mkdir("www/archive/".date("Y/m", $end_time - $i * 86400), 0777, true);
+  $day_str = "www/archive/".date("Y/m/Y-m-d", $end_time - $i * 86400);
 
   $body = get_body($day_str);
 
@@ -54,9 +54,9 @@ for ($i = 0; $i < 300 ; $i++) {
 }
 echo "</channel></rss>"; 
 
-file_put_contents("bugs.rss", ob_get_clean());
+file_put_contents("www/bugs.rss", ob_get_clean());
 
-copy("archive/".date("Y/m")."/$date_str.html", "today.html");
+copy("www/archive/".date("Y/m")."/$date_str.html", "www/today.html");
 
 exit(0);
 
