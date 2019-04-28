@@ -1,10 +1,15 @@
+#! /usr/bin/env php
 <?php
+
+$max_days = 20;
+$max_rss_days = 20;
+$force = false;
 
 require_once "vendor/autoload.php";
 
 $t_loader = new \Twig\Loader\FilesystemLoader('templates');
 $twig = new \Twig\Environment($t_loader, [
-    'cache' => 'cache/twig_compilation_cache',
+    'cache' => false, // 'cache/twig_compilation_cache',
 ]);
 
 $date_str = date("Y-m-d");
@@ -19,30 +24,29 @@ echo "<?xml version='1.0' encoding='UTF-8'?>
 <rss version='2.0'>
 <channel>
 <title>MySQL Bug Anniversaries</title>
-<link>http://php-groupies.de/</link>
+<link>http://mysql-bug-anniversaries.db-stuff.org/</link>
 <description>MySQL Bug Anniversaries by Day</description>
 <language>en-us</language>
 <ttl>1440</ttl>"; 
 
-
-
-
-for ($i = 0; $i < 300 ; $i++) {
+for ($i = 0; $i < $max_days; $i++) {
   @mkdir("www/archive/".date("Y/m", $end_time - $i * 86400), 0777, true);
   $day_str = "www/archive/".date("Y/m/Y-m-d", $end_time - $i * 86400);
+  $link = "./archive/".date("Y/m/Y-m-d", $end_time - $i * 86400).".html";
+  
+  $body = get_body($day_str, $force);
 
-  $body = get_body($day_str);
-
-  $link = "./$day_str.html";
   $guid = md5($body);
   $pubdate = strftime("%a, %d %b %Y 00:00:00 +0200", strtotime($day_str));
 
   $title = basename($day_str) . " MySQL Bug Anniversaries";
 
-  if (!file_exists("$day_str.html")) {
+  if ($force || !file_exists("$day_str.html")) {
+    error_log("generating ".basename($day_str));
     file_put_contents("$day_str.html", $twig->render('bug-day.html', [ 'title' => $title, 'body' => $body ]));
   }
 
+  if ($i < $max_rss_days) {
   echo "
 <item>
 <title>$title</title>
@@ -51,22 +55,23 @@ for ($i = 0; $i < 300 ; $i++) {
 <guid>$guid</guid>
 <description>".htmlspecialchars($body)."</description>
 </item>";
+  }
 }
 echo "</channel></rss>"; 
 
 file_put_contents("www/bugs.rss", ob_get_clean());
 
-copy("www/archive/".date("Y/m")."/$date_str.html", "www/today.html");
+copy("www/archive/".date("Y/m")."/$date_str.html", "www/index.html");
 
 exit(0);
 
 
-function get_body($date_str)
+function get_body($date_str, $force=false)
 {
   $date_str = basename($date_str);
   $body_file = "cache/bodies/$date_str.body";
 
-  if (file_exists($body_file)) {
+  if (!$force && file_exists($body_file)) {
     return file_get_contents($body_file);
   } else {
     $body = generate_body($date_str);
@@ -134,7 +139,7 @@ function generate_body($date_str)
 
 function fopen_cached($url) 
 {
-  $cache_dir = "cache/".date("Y-m-d");
+  $cache_dir = "cache/bugs/".date("Y/m/Y-m-d");
   $cache_file = "$cache_dir/".md5($url);
 
   if (!file_exists($cache_dir)) {

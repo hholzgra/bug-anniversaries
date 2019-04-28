@@ -1,6 +1,16 @@
 <main role="main" class="container">
-  <h2 class="text-center">{{ today }} MySQL Bug Anniversaries</h2>
+  <div class="btn-group" role="group">
+    <button type="button" class="btn-primary btn-sm" disabled>Bug years:</button>
+    {% for year in years %}
+      {% if year.count > 0 %}
+      <a role="button" class="btn btn-outline-danger btn-sm" href="#age-{{ year.age }}" title="{{ year.age }} years ago - {{ year.count }} bugs still active">{{ year.year }}&nbsp;&nbsp;<span class="badge badge-light">{{year.count}}<i class="fa fa-bug"></i></span></a>
+      {% else %}
+      <button type="button" class="btn btn-outline-success btn-sm" disabled title="{{ year.age }} years ago - no bugs left">{{ year.year }}</button>
+      {% endif %}
+    {% endfor %}
+  </div>
 
+  
   {% for age, bugs in sections %}
   <a class="anchor" id="age-{{age}}"></a>
   <div class="card my-1">
@@ -8,7 +18,7 @@
     <div class="card-body">
       <ul class="card-text">
 	{% for id, bug in bugs %}
-	<li><a class="text-reset" href="https://bugs.mysql.com/{{ id }}"><b>{{ id }}</b> - {{ bug.summary }}</a></li>
+	<li><a class="text-reset" target="_blank" href="https://bugs.mysql.com/{{ id }}"><b>{{ id }}</b> - {{ bug.summary }}</a></li>
 	{% endfor %}
       </ul>
     </div>
@@ -18,19 +28,75 @@
 </main>
 
 <nav class="navbar fixed-top navbar-expand-md bg-light" aria-label="Years & Bugs">
-  <span class="navbar-brand">Bug Years:</span>
-  <div class="collapse navbar-collapse" id="navbarCollapse">
+  <span class="navbar-brand"><a href="//db-stuff.org/" title="DB Stuff"><span class="fa fa-home"></span></a>&nbsp;&nbsp;<span onclick="$('#info_modal').modal('show');">MySQL Bug Anniversaries for {{today}}</span></span>
+  <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse">
     <ul class="navbar-nav">
-      {% for year in years %}
       <li class="nav-item">
-	{% if year.count > 0 %}
-	<a class="nav-link btn btn-outline-danger" href="#age-{{ year.age }}" title="{{ year.age }} years ago - {{ year.count }} bugs still active">{{ year.year }}</a>
-        {% else %}
-	<a class="nav-link btn btn-outline-success" onclick="return false;" href="#" title="{{ year.age }} years ago - no bugs left">{{ year.year }}</a>
-	{% endif %}
+	<a class="nav-link" href='/archive/{{ today|date_modify("-1 day")|date("Y/m/Y-m-d") }}.html' title="Previous day: {{ today|date_modify("-1 day")|date("Y-m-d") }}"><span class="fa fa-caret-left"></span></a>
       </li>
-      {% endfor %}
+      <li class="nav-item">
+	<input type="text" id="datepicker" style="visibility: hidden; display: none"/>
+	<a href='#' onclick='return ds();' title="Pick date"><span class="fa fa-calendar"></span></a>
+      </li>
+      <li class="nav-item">
+	<a class="nav-link" href='/archive/{{ today|date_modify("+1 day")|date("Y/m/Y-m-d") }}.html' onclick='return checkMe("{{today}}");' title="Next day: {{ today|date_modify("+1 day")|date("Y-m-d") }}"><span class="fa fa-caret-right"></span></a>
+      </li>
+      <a class="nav-link" href="/bugs.rss" title="RSS feed"><span class="fa fa-rss"></span></a>
     </ul>
   </div>
 </nav>
+
+<div class="modal fade" id="info_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><span class="fa fa-bug"></span> MySQL Bug Anniversaries</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+	<p>
+          This site shows <a href='https://bugs.mysql.com/' target='_blank'>MySQL bugs</a> that have been filed exactly one or more years ago to date, and have not yet been closed since.
+	</p>
+	<p>
+	  When looking at archived pages on this site the bugs listed are those
+	  that had still been active at that date, it does not necessarily reflect
+	  the current status of those bugs, which may actually have been closed
+	  since.
+	</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $( function() {
+    $( "#datepicker" ).datepicker({
+      showButtonPanel: true,
+      dateFormat: "yy-mm-dd",
+      minDate: "2013-01-01",
+      maxDate: new Date(),
+      onSelect: function(d,o) {
+          var a = d.split("/");
+          var url = "/archive/"+a[0]+"/"+a[1]+"/"+d+".html";
+          window.open(url, "_self");
+      }
+    });
+  } );
+
+  function ds() {
+    $( "#datepicker" ).datepicker("show");
+  }
+
+  function checkMe(d) {
+    var td = new Date();
+    var tds = td.toISOString().split('T')[0];
+
+    return d < tds;
+  }
+</script>
 
