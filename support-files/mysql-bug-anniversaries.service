@@ -1,0 +1,8 @@
+[Unit]
+Description=Update MySQL bug anniversaries
+
+[Service]
+Type=oneshot
+User=ww-data
+WorkingDirectory=/home/db-stuff/bug-anniversaries
+ExecStart=/home/db-stuff/bug-anniversaries/bugs.php
